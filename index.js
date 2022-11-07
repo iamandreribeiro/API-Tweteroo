@@ -6,18 +6,15 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-let user = {
-    username: "",
-    avatar: ""
-};
-
 let users = [];
-
 let tweets = [];
 
-let last10 = [];
-
 app.post("/sign-up", (req, res) => {
+    let user = {
+        username: "",
+        avatar: ""
+    };
+
     user.username = req.body.username;
     user.avatar = req.body.avatar;
 
@@ -29,33 +26,37 @@ app.post("/sign-up", (req, res) => {
 app.post("/tweets", (req, res) => {
     let tweet = {
         username: "",
-        avatar: "", 
-        tweet: ""
+        tweet: "", 
+        avatar: ""
     }
 
     tweet.username = req.body.username;
-    tweet.avatar = user.avatar;
     tweet.tweet = req.body.tweet;
 
-    tweets.push(tweet);
+    users.forEach((u) => {
+        if(u.username === req.body.username) {
+            tweet.avatar = u.avatar;
+        }
+    })    
 
+    tweets.push(tweet);
+    
     res.send("OK")
 });
 
 app.get("/tweets", (req, res) => {
-    let contador = tweets.length-1;
+    let last10 = [];
 
-    if(contador >= 9) {
-        for(let i = 0; i < 10; i++) {
-            last10.push(tweets[contador]);
-            contador--;
+    if(tweets.length >= 9) {
+        for(let i = tweets.length-1; i > tweets.length-10; i--) {
+            last10.push(tweets[i]);
         }
 
         res.send(last10);
     } else {
+        tweets.reverse();
         res.send(tweets);
-    }
-    
+    }    
 });
 
 app.listen(5000);
